@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hospital_ai_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hospital_ai
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hospital_ai_network
+    restart: unless-stopped
+
+  # Redis (Optional - for caching and rate limiting)
+  redis:
+    image: redis:7-alpine
+    container_name: hospital_ai_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hospital_ai_network
+    restart: unless-stopped
+
+  # FastAPI Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hospital_ai_app
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/hospital_ai
+      REDIS_URL: redis://redis:6379/0
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+      - ./scripts:/app/scripts
+      - ./tests:/app/tests
+      - knowledge_data:/app/app/data
+      - logs_data:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        alembic upgrade head &&
+        python scripts/create_admin.py &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    networks:
+      - hospital_ai_network
+    restart: unless-stopped
+
+  # Nginx (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: hospital_ai_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/usr/share/nginx/html/static:ro
+    depends_on:
+      - app
+    networks:
+      - hospital_ai_network
+    restart: unless-stopped
+    profiles:
+      - production
+
+  # pgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hospital_ai_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@hospital.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - hospital_ai_network
+    restart: unless-stopped
+    profiles:
+      - dev
+
+# Volumes
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  knowledge_data:
+    driver: local
+  logs_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+# Networks
+networks:
+  hospital_ai_network:
+    driver: bridge
+    name: hospital_ai_network

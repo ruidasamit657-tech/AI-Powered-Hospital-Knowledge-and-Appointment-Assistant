@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hospital Assistant - Chat</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-hospital"></i>
+                    <span>AI Hospital</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar" id="userAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name" id="userName">Guest User</span>
+                    <span class="user-role" id="userRole">Patient</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3>Chat History</h3>
+                    <button class="new-chat-btn" id="newChatBtn">
+                        <i class="fas fa-plus"></i>
+                        New Chat
+                    </button>
+                </div>
+                <div class="chat-history" id="chatHistory">
+                    <!-- Dynamic chat history will be loaded here -->
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+            <div class="chat-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="chatTitle">New Chat</h2>
+                </div>
+                <div class="header-right">
+                    <select id="chatMode" class="mode-select">
+                        <option value="rag">RAG Mode</option>
+                        <option value="retrieval_only">Retrieval Only</option>
+                        <option value="llm">LLM Only</option>
+                    </select>
+                    <button class="clear-chat-btn" id="clearChatBtn" title="Clear Chat">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h2>Welcome to AI Hospital Assistant</h2>
+                    <p>Ask me about hospital departments, doctors, appointments, or any medical knowledge you need.</p>
+                    <div class="quick-suggestions">
+                        <button class="suggestion-btn" data-query="What departments are available?">
+                            <i class="fas fa-building"></i>
+                            Departments
+                        </button>
+                        <button class="suggestion-btn" data-query="How do I book an appointment?">
+                            <i class="fas fa-calendar-plus"></i>
+                            Book Appointment
+                        </button>
+                        <button class="suggestion-btn" data-query="What are the hospital visiting hours?">
+                            <i class="fas fa-clock"></i>
+                            Visiting Hours
+                        </button>
+                        <button class="suggestion-btn" data-query="What services does the hospital offer?">
+                            <i class="fas fa-stethoscope"></i>
+                            Services
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="chatInput" 
+                        placeholder="Type your message here... (Press Enter to send)"
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span class="status-indicator" id="statusIndicator">
+                        <span class="status-dot online"></span>
+                        Online
+                    </span>
+                    <span class="char-count" id="charCount">0</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-hospital"></i> AI Hospital Assistant</h2>
+                <p>Please login to continue</p>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginUsername">
+                            <i class="fas fa-user"></i> Username
+                        </label>
+                        <input type="text" id="loginUsername" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                            <button type="button" class="toggle-password" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="login-btn" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <div class="auth-links">
+                        <a href="#" id="showRegisterLink">Don't have an account? Register</a>
+                    </div>
+                </form>
+
+                <form id="registerForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="registerFullName">
+                            <i class="fas fa-user"></i> Full Name
+                        </label>
+                        <input type="text" id="registerFullName" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerUsername">
+                            <i class="fas fa-user-tag"></i> Username
+                        </label>
+                        <input type="text" id="registerUsername" placeholder="Choose a username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">
+                            <i class="fas fa-envelope"></i> Email
+                        </label>
+                        <input type="email" id="registerEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <input type="password" id="registerPassword" placeholder="Choose a password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerRole">
+                            <i class="fas fa-id-badge"></i> Role
+                        </label>
+                        <select id="registerRole">
+                            <option value="patient">Patient</option>
+                            <option value="staff">Staff</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="register-btn">
+                        <i class="fas fa-user-plus"></i> Register
+                    </button>
+                    <div class="auth-links">
+                        <a href="#" id="showLoginLink">Already have an account? Login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Processing your request...</p>
+    </div>
+
+    <script src="/static/chat.js"></script>
+</body>
+</html>

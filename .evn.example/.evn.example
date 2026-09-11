@@ -1,0 +1,44 @@
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/hospital_ai
+# For Docker: DATABASE_URL=postgresql://postgres:postgres@postgres:5432/hospital_ai
+
+# JWT Configuration
+SECRET_KEY=your-super-secret-key-change-in-production-please-use-strong-key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# LLM API Keys
+GROQ_API_KEY=your-groq-api-key-here
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Vector Store Configuration
+VECTOR_DB_PATH=./app/data/vector_index
+
+# File Upload Configuration
+MAX_UPLOAD_SIZE=10485760  # 10MB in bytes
+ALLOWED_EXTENSIONS=.pdf,.docx,.txt,.md
+
+# Logging Configuration
+LOG_LEVEL=INFO
+
+# CORS Configuration
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8000
+
+# Rate Limiting (Optional)
+RATE_LIMIT_ENABLED=true
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_PERIOD=60
+
+# Redis (Optional)
+REDIS_URL=redis://localhost:6379/0
+
+# Email Configuration (Optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+
+# Application Configuration
+APP_NAME=Hospital AI Assistant
+APP_VERSION=1.0.0
+DEBUG=true

@@ -1,0 +1,35 @@
+# Create .env file with content
+@"
+# Database Configuration
+# For PostgreSQL (if installed):
+# DATABASE_URL=postgresql://postgres:password@localhost:5432/hospital_ai
+# For SQLite (easier - no installation needed):
+DATABASE_URL=sqlite:///./hospital_ai.db
+
+# JWT Security
+SECRET_KEY=your-super-secret-key-change-this-in-production-12345
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Groq API (get from https://console.groq.com)
+GROQ_API_KEY=your-groq-api-key-here
+
+# LLM Settings
+LLM_PROVIDER=groq
+LLM_MODEL=mixtral-8x7b-32768
+
+# File Upload
+MAX_UPLOAD_SIZE=10485760
+ALLOWED_EXTENSIONS=.pdf,.docx,.txt,.md
+
+# Vector Store
+VECTOR_STORE_PATH=./app/data/vector_index
+CHUNK_SIZE=500
+CHUNK_OVERLAP=50
+
+# CORS
+FRONTEND_URL=http://localhost:8000
+"@ | Out-File -FilePath .env -Encoding UTF8
+
+# Check if .env was created
+Get-Content .env
